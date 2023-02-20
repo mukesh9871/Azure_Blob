@@ -8,9 +8,17 @@ from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
 from functools import partial
 import uuid
 
+# Container details
+#ACCOUNT_URL = "https://ipenf1.blob.core.windows.net"
+#ACCOUNT_KEY = "sp=racwdlmeop&st=2023-02-15T05:24:19Z&se=2023-03-31T13:24:19Z&sv=2021-06-08&sr=c&sig=OApjhedN0q4RusQXmlYUaNmrkxIfvyOScsMFORP%2F1ZA%3D"
+#AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=ipenf1;AccountKey=opIKkPQVXjKoRLbzYT9Gcrt3pz7P1RHtJVrhVBWuZxT2YjLbgPXMkUwlso9a579hOmmadogdbAd/+AStODQ+5g==;EndpointSuffix=core.windows.net"
+
+# ipenf1 account details :: Always use account usr and sas details to connect
 ACCOUNT_URL = "https://ipenf1.blob.core.windows.net"
-ACCOUNT_KEY = "sp=racwdlmeop&st=2023-02-15T05:24:19Z&se=2023-03-31T13:24:19Z&sv=2021-06-08&sr=c&sig=OApjhedN0q4RusQXmlYUaNmrkxIfvyOScsMFORP%2F1ZA%3D"
-AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=ipenf1;AccountKey=opIKkPQVXjKoRLbzYT9Gcrt3pz7P1RHtJVrhVBWuZxT2YjLbgPXMkUwlso9a579hOmmadogdbAd/+AStODQ+5g==;EndpointSuffix=core.windows.net"
+ACCOUNT_KEY = "?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
+AZURE_STORAGE_CONNECTION_STRING = "BlobEndpoint=https://ipenf1.blob.core.windows.net/;QueueEndpoint=https://ipenf1.queue.core.windows.net/;FileEndpoint=https://ipenf1.file.core.windows.net/;TableEndpoint=https://ipenf1.table.core.windows.net/;SharedAccessSignature=sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
+BLOB_SAS_URL = "https://ipenf1.blob.core.windows.net/?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
+
 #SOURCE_FILE = '/mnt/d/ipeauthmukesh.txt'
 SOURCE_FILE = '/mnt/d/Content.pdf'
 #SOURCE_FILE = '/mnt/d/NF-1 readout Station/NF1_Readout_Station_Doc.pdf'
@@ -26,17 +34,21 @@ class IpeAzure(object):
         self.account_key = ACCOUNT_KEY
         
         self.connection_string = AZURE_STORAGE_CONNECTION_STRING
-        self.sas_url = "https://ipenf1.blob.core.windows.net/ipecontainer1?sp=racwdlmeop&st=2023-02-15T05:24:19Z&se=2023-03-31T13:24:19Z&sv=2021-06-08&sr=c&sig=OApjhedN0q4RusQXmlYUaNmrkxIfvyOScsMFORP%2F1ZA%3D"
+        self.sas_url = BLOB_SAS_URL
     
     def createContainer(self, containerName):
         # Instantiate a BlobServiceClient using a connection string
-        blob_service_client = BlobServiceClient.from_connection_string(conn_str=self.connection_string)
+        # Create blobserviceclient from connection usl
+        # blob_service_client = BlobServiceClient.from_connection_string(conn_str=self.connection_string)
+
+        # Create blob service client from url and sas key
+        blob_service_client = BlobServiceClient(self.account_url, self.account_key)
 
         # Instantiate a ContainerClient with container name
         container_client = blob_service_client.get_container_client(containerName)
 
         try:
-            if not self.verifyIfContainerExist(containerName):
+            if not container_client.exists():
                 container_client.create_container()
                 print(f"{containerName} created")
             else:
@@ -45,37 +57,32 @@ class IpeAzure(object):
             print("The container does not exist: {}".format(ex))
         except HttpResponseError as ex:
             print(f"create container failed HttpResponseError '{sys.exc_info()[0]}' message.\n")
-        except Exception as ex:
+        except:
+            print("Unknown exception occured.")
             pass
-
-    def verifyIfContainerExist(self, containerName):
-        isExist = False
-        container_clinet = ContainerClient(self.account_url, containerName, self.account_key)
-        if container_clinet.exists:
-            print(f"{containerName} exist")
-            isExist = True
-        else:
-            print(f"{containerName} not exist")
-        return isExist
 
     def deleteContainer(self, containerName):
         # Instantiate a BlobServiceClient using a connection string
-        blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
+        #blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
+        blob_service_client = BlobServiceClient(self.account_url, self.account_key)
         container_client = blob_service_client.get_container_client(containerName)
-        container_client.delete_container()
+        if container_client.exists():
+            container_client.delete_container()
+            print(f"container {containerName} deleted successfully.")
+        else:
+            print(f"container {containerName} does not exist. Nothing to delete.")
 
-        print(f"container {containerName} deleted successfully.")
 
     def uplaodBlobToContainer(self, containerName):
         blob_service_client = BlobServiceClient(account_url=self.account_url, credential=self.account_key)
-
-        # Instantiate a ContainerClient
         container_client = blob_service_client.get_container_client(containerName)
-        """if not container_client.exists:
+        
+        if container_client.exists() == False:
             print(f"{containerName} does not exist")
-        else:
             container_client.create_container()
-            print(f"{containerName} created")"""
+            print(f"{containerName} created")
+        else:
+            print(f"Container already exist")
 
         blob_name = os.path.basename(SOURCE_FILE)
         blob_client = container_client.get_blob_client(blob_name)
@@ -172,10 +179,31 @@ class IpeAzure(object):
         for blob in blobs_list:
             print(blob.name)
 
+
+    def verifyIfContainerExist(self, containerName):
+        blob_service_client = BlobServiceClient(self.account_url, self.account_key)
+        container_client = blob_service_client.get_container_client(containerName)
+        retVal = False
+        try:
+            if container_client.exists() == False:
+                print(f"{containerName} does not exist")
+                retVal = False
+            else:
+                print(f"{containerName} container exist already")
+                retVal = True
+        except ResourceNotFoundError as ex:
+            print("The container does not exist: {}".format(ex))
+        except HttpResponseError as ex:
+            print(f"create container failed HttpResponseError '{sys.exc_info()[0]}' message.\n")
+        except Exception as ex:
+            pass
+        return retVal
+
 if __name__ == '__main__':
-    containerName = "ipecontainer2"
+    containerName = "ipecontainer1"
     ipeAzure = IpeAzure()
-    #ipeAzure.createContainer(containerName)
+    ipeAzure.verifyIfContainerExist(containerName)
+    ipeAzure.createContainer(containerName)
     ipeAzure.uplaodBlobToContainer(containerName=containerName)
-    #ipeAzure.listBlobsInAContainer(containerName=containerName)
-    #ipeAzure.deleteContainer(containerName)
+    ipeAzure.listBlobsInAContainer(containerName=containerName)
+    ipeAzure.deleteContainer(containerName)
