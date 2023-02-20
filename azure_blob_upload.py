@@ -1,3 +1,8 @@
+"""
+Dependency:
+pip install azure-storage-blob
+"""
+
 import os
 import sys
 from datetime import datetime, timedelta
@@ -15,12 +20,12 @@ import uuid
 
 # ipenf1 account details :: Always use account usr and sas details to connect
 ACCOUNT_URL = "https://ipenf1.blob.core.windows.net"
-ACCOUNT_KEY = "?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
+SAS_TOKEN = "?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
 AZURE_STORAGE_CONNECTION_STRING = "BlobEndpoint=https://ipenf1.blob.core.windows.net/;QueueEndpoint=https://ipenf1.queue.core.windows.net/;FileEndpoint=https://ipenf1.file.core.windows.net/;TableEndpoint=https://ipenf1.table.core.windows.net/;SharedAccessSignature=sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
 BLOB_SAS_URL = "https://ipenf1.blob.core.windows.net/?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2023-04-30T14:24:09Z&st=2023-02-20T06:24:09Z&spr=https,http&sig=4vedpBf25PG03lGQUz0Am55tFy3o7zXu%2FwClE5TdtUc%3D"
 
-#SOURCE_FILE = '/mnt/d/ipeauthmukesh.txt'
-SOURCE_FILE = '/mnt/d/Content.pdf'
+SOURCE_FILE = '/mnt/d/ipeauthmukesh.txt'
+#SOURCE_FILE = '/mnt/d/Content.pdf'
 #SOURCE_FILE = '/mnt/d/NF-1 readout Station/NF1_Readout_Station_Doc.pdf'
 #SOURCE_FILE = '/mnt/d/NF1_backEnd_ReDesign.zip'
 #SOURCE_FILE = '/mnt/d/webinterface.zip'
@@ -31,7 +36,7 @@ class IpeAzure(object):
     
     def __init__(self) -> None:
         self.account_url = ACCOUNT_URL
-        self.account_key = ACCOUNT_KEY
+        self.account_key = SAS_TOKEN
         
         self.connection_string = AZURE_STORAGE_CONNECTION_STRING
         self.sas_url = BLOB_SAS_URL
@@ -206,4 +211,4 @@ if __name__ == '__main__':
     ipeAzure.createContainer(containerName)
     ipeAzure.uplaodBlobToContainer(containerName=containerName)
     ipeAzure.listBlobsInAContainer(containerName=containerName)
-    ipeAzure.deleteContainer(containerName)
+    #ipeAzure.deleteContainer(containerName)
