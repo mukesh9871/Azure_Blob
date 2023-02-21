@@ -1,9 +1,10 @@
 """
-  Author: Mukesh Kumar
-  Description: IPE DXS Demo Azure Blob uplaod
-  Dependency: azure-storage-blob
-  To install: pip install azure-storage-blob
-  To run: $ python3 azure_blob_upload.py -h
+  Author                    : mkm
+  Description               : IPE DXS Demo Azure Blob upload
+  To see the help details   : python3 ./azure_blob_upload.py -h
+  Dependency                : azure-storage-blob
+  To install dependency     : pip install azure-storage-blob
+  To run (Example)          : python3 ./azure_blob_upload.py -au "<account_url>" -st "<account_sas_token>" -bf "<local_folder_path>" -cn "<container_name>"
 """
 
 import os
@@ -22,7 +23,7 @@ argParser = argparse.ArgumentParser(description='Azure Blob information. Depende
 argParser.add_argument("-au", "--accurl",   dest="acc_url",   type=str, help="Blob service storage account URL")
 argParser.add_argument("-st", "--sastoken", dest="sas_token", type=str, help="SAS token of storage account")
 argParser.add_argument("-cn", "--containername", dest="container_name", type=str, help="Container name. It should be only in lowercase. default container name:ipecontainer1")
-argParser.add_argument("-bf", "--blobfolder", dest="blob_folder", type=str, help="Provide Local folder absolute path of blobs which need to be uploaded to container. Absolute path of single file can also be provided.")
+argParser.add_argument("-bf", "--blobfolder", dest="blob_folder", type=str, help="Provide Local folder path of blobs which need to be uploaded to container. Path of single file can also be provided.")
 
 args = argParser.parse_args()
 
@@ -36,6 +37,7 @@ print("SAS_TOKEN      :",SAS_TOKEN)
 print("CONTAINER_NAME :",CONTAINER_NAME)
 print("BLOB_FOLDER    :",BLOB_FOLDER)
 print("******************************** \n")
+
 class IpeAzure(object):
     
     def __init__(self) -> None:
